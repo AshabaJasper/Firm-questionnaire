@@ -1,0 +1,1514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Audit Management System — Discovery & Requirements Questionnaire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2EEE3;
+    --paper-2:#ECE7D8;
+    --surface:#FBFAF4;
+    --ink:#20201A;
+    --ink-soft:#46453B;
+    --muted:#6F6E62;
+    --line:#D6D0BD;
+    --line-soft:#E6E1D1;
+    --accent:#1E5345;
+    --accent-dark:#143A30;
+    --accent-tint:#E2EAE2;
+    --ochre:#A9722B;
+    --ochre-tint:#F1E5CF;
+    --must:#9B2C2C;
+    --should:#A9722B;
+    --could:#3F6098;
+    --no:#8A887C;
+    --must-tint:#F2DEDC;
+    --should-tint:#F1E5CF;
+    --could-tint:#DEE5F0;
+    --no-tint:#E7E5DC;
+    --radius:9px;
+    --shadow:0 1px 0 rgba(0,0,0,.04), 0 12px 30px -18px rgba(32,32,26,.4);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(900px 500px at 88% -8%, rgba(30,83,69,.07), transparent 60%),
+      radial-gradient(700px 460px at -6% 4%, rgba(169,114,43,.07), transparent 55%),
+      var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:15px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(32,32,26,.97);
+    color:#F2EEE3;
+    border-bottom:1px solid #000;
+    display:flex; align-items:center; gap:18px;
+    padding:11px 22px;
+  }
+  .topbar .mark{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:#C9C2AC;
+    border:1px solid #4a4940; padding:5px 9px; border-radius:5px;
+    white-space:nowrap;
+  }
+  .topbar .tb-title{
+    font-family:"Fraunces",serif; font-weight:500; font-size:16px;
+    margin-right:auto; letter-spacing:.005em;
+  }
+  .topbar .tb-title b{color:#8FBFB0; font-weight:600;}
+  .progwrap{display:flex;align-items:center;gap:10px;min-width:210px;}
+  .progbar{position:relative;flex:1;height:7px;border-radius:20px;background:#43423a;overflow:hidden;}
+  .progbar i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--ochre),#8FBFB0);transition:width .35s ease;}
+  .progtext{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#C9C2AC;white-space:nowrap;}
+  .btn{
+    font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.06em;
+    text-transform:uppercase; cursor:pointer;
+    background:transparent; color:#F2EEE3;
+    border:1px solid #57564c; border-radius:6px;
+    padding:7px 11px; transition:.15s;
+    white-space:nowrap;
+  }
+  .btn:hover{background:#2f2f28;border-color:#8FBFB0;}
+  .btn.primary{background:#8FBFB0;color:#143A30;border-color:#8FBFB0;font-weight:600;}
+  .btn.primary:hover{background:#a6cfc2;}
+  .btn.danger:hover{border-color:#c46a64;color:#e7b3ae;background:#2f2f28;}
+
+  /* ---------- Layout ---------- */
+  .shell{display:grid;grid-template-columns:248px minmax(0,1fr);gap:0;max-width:1320px;margin:0 auto;}
+  .sidenav{
+    position:sticky; top:54px; align-self:start;
+    height:calc(100vh - 54px); overflow-y:auto;
+    padding:24px 16px 60px 22px;
+    border-right:1px solid var(--line);
+  }
+  .sidenav h4{
+    font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--muted); margin:0 0 12px;
+  }
+  .navlink{
+    display:flex;align-items:center;gap:9px;
+    text-decoration:none; color:var(--ink-soft);
+    font-size:13px; padding:6px 9px; border-radius:6px; margin-bottom:1px;
+    border:1px solid transparent;
+  }
+  .navlink:hover{background:var(--surface);border-color:var(--line-soft);}
+  .navlink.active{background:var(--accent-tint);color:var(--accent-dark);border-color:#bcd0c7;font-weight:600;}
+  .navlink .nx{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--muted);
+    width:20px;text-align:center;flex-shrink:0;
+  }
+  .navlink.active .nx{color:var(--accent);}
+  .navlink .dot{
+    margin-left:auto;width:7px;height:7px;border-radius:50%;
+    background:var(--line);flex-shrink:0;
+  }
+  .navlink .dot.part{background:var(--ochre);}
+  .navlink .dot.done{background:var(--accent);}
+
+  main{padding:34px 40px 120px;min-width:0;}
+
+  /* ---------- Cover ---------- */
+  .cover{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:38px 40px 34px;
+    position:relative; overflow:hidden;
+    margin-bottom:26px;
+  }
+  .cover::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(30,83,69,.05),transparent 120px);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--accent);margin:0 0 14px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::after{content:"";height:1px;flex:1;background:var(--line);}
+  h1{
+    font-family:"Fraunces",serif;font-weight:500;font-size:38px;line-height:1.12;
+    margin:0 0 10px;letter-spacing:-0.01em;
+  }
+  .cover .lede{font-size:15.5px;color:var(--ink-soft);max-width:62ch;margin:0 0 22px;}
+  .metagrid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:0;
+    border:1px solid var(--line);border-radius:8px;overflow:hidden;
+  }
+  .metagrid label{
+    display:flex;flex-direction:column;gap:5px;
+    padding:12px 14px;border-bottom:1px solid var(--line-soft);
+  }
+  .metagrid label:nth-child(odd){border-right:1px solid var(--line-soft);}
+  .metagrid .lab{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.13em;
+    text-transform:uppercase;color:var(--muted);
+  }
+  .metagrid input{
+    border:none;background:transparent;font-family:inherit;font-size:14px;
+    color:var(--ink);padding:2px 0;
+  }
+  .metagrid input:focus{outline:none;}
+  .metagrid label:focus-within{background:var(--accent-tint);}
+
+  .howto{
+    margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:14px;
+  }
+  .howto .card{
+    background:var(--paper-2);border:1px solid var(--line-soft);border-radius:8px;
+    padding:14px 16px;
+  }
+  .howto .card b{font-size:13px;}
+  .howto .card p{margin:5px 0 0;font-size:13px;color:var(--ink-soft);}
+  .keylegend{
+    display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;
+  }
+  .chip{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;
+    padding:3px 8px;border-radius:5px;border:1px solid;
+  }
+  .chip.must{background:var(--must-tint);color:var(--must);border-color:#dcb7b3;}
+  .chip.should{background:var(--should-tint);color:var(--should);border-color:#ddc59a;}
+  .chip.could{background:var(--could-tint);color:var(--could);border-color:#aebdd6;}
+  .chip.no{background:var(--no-tint);color:#5f5e54;border-color:#cbc9bd;}
+
+  /* ---------- Sections ---------- */
+  section{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:28px 32px 30px;
+    margin-bottom:22px;
+    scroll-margin-top:72px;
+  }
+  .sechead{
+    display:flex;align-items:flex-start;gap:14px;
+    padding-bottom:14px;margin-bottom:20px;
+    border-bottom:2px solid var(--ink);
+  }
+  .secnum{
+    font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:13px;
+    background:var(--ink);color:var(--paper);
+    padding:6px 9px;border-radius:6px;flex-shrink:0;margin-top:3px;
+  }
+  .sechead h2{
+    font-family:"Fraunces",serif;font-weight:500;font-size:25px;line-height:1.2;
+    margin:0;letter-spacing:-0.005em;
+  }
+  .sechead p{margin:5px 0 0;font-size:13.5px;color:var(--muted);}
+
+  h3{
+    font-family:"IBM Plex Sans",sans-serif;font-weight:700;font-size:14px;
+    letter-spacing:.01em;margin:24px 0 4px;
+    display:flex;align-items:baseline;gap:9px;
+  }
+  h3 .h3n{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+    color:var(--accent);
+  }
+  h3:first-of-type{margin-top:4px;}
+  .subnote{font-size:12.5px;color:var(--muted);margin:0 0 12px;}
+
+  /* ---------- Generic survey fields ---------- */
+  .qblock{margin:14px 0 6px;}
+  .qlabel{font-weight:600;font-size:13.5px;display:block;margin-bottom:7px;}
+  .qlabel .opt{font-weight:400;color:var(--muted);font-size:12px;}
+  textarea,input[type=text],input[type=number],input[type=date]{
+    font-family:inherit;font-size:13.5px;color:var(--ink);
+    background:var(--paper);border:1px solid var(--line);border-radius:7px;
+    padding:9px 11px;width:100%;transition:.15s;
+  }
+  textarea{resize:vertical;min-height:62px;line-height:1.5;}
+  textarea:focus,input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-tint);}
+  .inline-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field .ftiny{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+
+  /* checkbox + radio groups */
+  .opts{display:flex;flex-wrap:wrap;gap:8px;}
+  .opts.col{flex-direction:column;gap:6px;}
+  .opt-pill{
+    position:relative;display:flex;align-items:center;gap:8px;
+    border:1px solid var(--line);background:var(--paper);
+    border-radius:7px;padding:8px 12px;cursor:pointer;font-size:13px;
+    transition:.13s;user-select:none;
+  }
+  .opt-pill:hover{border-color:var(--accent);background:#fff;}
+  .opt-pill input{position:absolute;opacity:0;width:0;height:0;}
+  .opt-pill .mark{
+    width:15px;height:15px;border:1.5px solid var(--muted);
+    flex-shrink:0;display:grid;place-items:center;
+  }
+  .opt-pill .mark.box{border-radius:4px;}
+  .opt-pill .mark.circle{border-radius:50%;}
+  .opt-pill .mark::after{content:"";width:7px;height:7px;background:var(--accent);transform:scale(0);transition:.13s;}
+  .opt-pill .mark.box::after{border-radius:2px;}
+  .opt-pill .mark.circle::after{border-radius:50%;}
+  .opt-pill input:checked ~ .mark{border-color:var(--accent);}
+  .opt-pill input:checked ~ .mark::after{transform:scale(1);}
+  .opt-pill:has(input:checked){border-color:var(--accent);background:var(--accent-tint);font-weight:600;}
+  .opt-pill input:focus-visible ~ .mark{box-shadow:0 0 0 3px var(--accent-tint);}
+
+  /* ---------- Feature priority tables ---------- */
+  .ftable{
+    border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:12px 0 4px;
+  }
+  .frow{
+    display:grid;grid-template-columns:minmax(0,1.7fr) 296px minmax(0,1fr);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .frow:last-child{border-bottom:none;}
+  .frow.fhead{
+    background:var(--ink);color:var(--paper);
+  }
+  .frow.fhead > div{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.13em;
+    text-transform:uppercase;padding:9px 13px;
+  }
+  .frow:not(.fhead):nth-child(even){background:var(--paper);}
+  .fcell-name{padding:11px 13px;}
+  .fcell-name .fn{font-weight:600;font-size:13px;}
+  .fcell-name .fd{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45;}
+  .fcell-prio{padding:10px 13px;display:flex;align-items:center;border-left:1px solid var(--line-soft);}
+  .fcell-note{padding:8px 11px;border-left:1px solid var(--line-soft);display:flex;align-items:center;}
+  .fcell-note input{font-size:12.5px;padding:6px 8px;background:transparent;border:1px dashed var(--line);}
+  .fcell-note input:focus{background:#fff;border-style:solid;}
+
+  .seg{display:flex;width:100%;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--paper);}
+  .seg label{
+    flex:1;text-align:center;cursor:pointer;
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;
+    padding:6px 2px;color:var(--muted);transition:.12s;
+    border-right:1px solid var(--line);
+  }
+  .seg label:last-child{border-right:none;}
+  .seg input{position:absolute;opacity:0;width:0;height:0;}
+  .seg label:hover{background:#fff;color:var(--ink);}
+  .seg input:checked + span{display:block;}
+  .seg label.l-must input:checked ~ *,.seg label.l-must:has(input:checked){}
+  .seg label:has(input:checked){color:#fff;}
+  .seg label.l-must:has(input:checked){background:var(--must);}
+  .seg label.l-should:has(input:checked){background:var(--should);}
+  .seg label.l-could:has(input:checked){background:var(--could);}
+  .seg label.l-no:has(input:checked){background:var(--no);}
+  .seg label:focus-within{box-shadow:inset 0 0 0 2px var(--accent-tint);}
+
+  /* ---------- Landscape comparison table ---------- */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin:14px 0 6px;}
+  table.cmp{border-collapse:collapse;width:100%;font-size:12.5px;min-width:680px;}
+  table.cmp th{
+    background:var(--ink);color:var(--paper);text-align:left;
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;padding:9px 12px;font-weight:500;
+    position:sticky;top:0;
+  }
+  table.cmp td{padding:9px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  table.cmp tr:nth-child(even) td{background:var(--paper);}
+  table.cmp tr:last-child td{border-bottom:none;}
+  table.cmp td b{color:var(--ink);}
+  .tag{
+    display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:9.5px;
+    padding:2px 6px;border-radius:4px;font-weight:500;letter-spacing:.04em;
+  }
+  .tag.fin{background:var(--accent-tint);color:var(--accent-dark);}
+  .tag.ia{background:var(--could-tint);color:var(--could);}
+  .tag.ehs{background:var(--should-tint);color:var(--should);}
+
+  .callout{
+    background:var(--accent-tint);border:1px solid #bcd0c7;border-left:3px solid var(--accent);
+    border-radius:7px;padding:12px 15px;margin:14px 0;font-size:13px;color:var(--accent-dark);
+  }
+  .callout b{color:var(--accent-dark);}
+  .callout.ochre{background:var(--ochre-tint);border-color:#ddc59a;border-left-color:var(--ochre);color:#73501f;}
+  .callout.ochre b{color:#5e4218;}
+
+  .note-banner{
+    display:flex;gap:10px;align-items:center;
+    background:#fff;border:1px solid var(--ochre);border-radius:8px;
+    padding:10px 14px;margin-bottom:22px;font-size:12.5px;color:#73501f;
+  }
+  .note-banner .ndot{width:8px;height:8px;border-radius:50%;background:var(--ochre);flex-shrink:0;}
+
+  /* role / count table */
+  .counttable{border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .counttable .crow{display:grid;grid-template-columns:1.4fr 1fr 1fr;border-bottom:1px solid var(--line-soft);}
+  .counttable .crow:last-child{border-bottom:none;}
+  .counttable .crow.chead{background:var(--ink);color:var(--paper);}
+  .counttable .crow.chead > div{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:9px 12px;}
+  .counttable .ccell{padding:7px 12px;border-left:1px solid var(--line-soft);}
+  .counttable .ccell:first-child{border-left:none;display:flex;align-items:center;font-weight:600;font-size:13px;}
+  .counttable .ccell input{border:1px dashed var(--line);background:transparent;padding:6px 8px;font-size:12.5px;}
+  .counttable .ccell input:focus{border-style:solid;background:#fff;}
+  .counttable .crow:nth-child(even){background:var(--paper);}
+
+  /* scoring summary */
+  .scoregrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:8px 0 6px;}
+  .scorecard{
+    border:1px solid var(--line);border-radius:8px;padding:14px;text-align:center;
+    background:var(--paper);
+  }
+  .scorecard .sv{font-family:"Fraunces",serif;font-size:34px;font-weight:500;line-height:1;}
+  .scorecard .sl{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:6px;}
+  .scorecard.must{border-color:#dcb7b3;background:var(--must-tint);}
+  .scorecard.must .sv{color:var(--must);}
+  .scorecard.should{border-color:#ddc59a;background:var(--should-tint);}
+  .scorecard.should .sv{color:var(--should);}
+  .scorecard.could{border-color:#aebdd6;background:var(--could-tint);}
+  .scorecard.could .sv{color:var(--could);}
+  .scorecard.no{border-color:#cbc9bd;background:var(--no-tint);}
+  .scorecard.no .sv{color:#5f5e54;}
+
+  .signgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
+  .signbox{border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--paper);}
+  .signbox .st{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  .signline{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+  .signline:last-child{margin-bottom:0;}
+  .signline .sll{font-size:11px;color:var(--muted);}
+
+  footer{
+    text-align:center;color:var(--muted);font-size:12px;
+    padding:30px 20px 10px;
+  }
+  footer .fr{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;}
+
+  .navtoggle{display:none;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:1000px){
+    .shell{grid-template-columns:1fr;}
+    .sidenav{
+      position:fixed;top:50px;left:0;right:0;height:auto;max-height:70vh;
+      background:var(--surface);border-bottom:1px solid var(--line);border-right:none;
+      z-index:40;display:none;box-shadow:var(--shadow);
+    }
+    .sidenav.open{display:block;}
+    .navtoggle{display:inline-flex;}
+    main{padding:24px 18px 100px;}
+    .frow{grid-template-columns:1fr;}
+    .fcell-prio,.fcell-note{border-left:none;border-top:1px solid var(--line-soft);}
+    .metagrid{grid-template-columns:1fr;}
+    .metagrid label:nth-child(odd){border-right:none;}
+    .howto{grid-template-columns:1fr;}
+    .scoregrid{grid-template-columns:repeat(2,1fr);}
+    .signgrid{grid-template-columns:1fr;}
+    .counttable .crow{grid-template-columns:1fr;}
+    .counttable .ccell{border-left:none;border-top:1px solid var(--line-soft);}
+    .counttable .ccell:first-child{border-top:none;}
+    h1{font-size:30px;}
+  }
+  @media (max-width:560px){
+    .topbar{flex-wrap:wrap;gap:10px;padding:9px 14px;}
+    .progwrap{order:3;width:100%;min-width:0;}
+    .cover{padding:26px 20px;}
+    section{padding:22px 18px 24px;}
+  }
+
+  /* ---------- Print ---------- */
+  @media print{
+    body{background:#fff;font-size:11px;}
+    .topbar,.sidenav,.navtoggle,.note-banner,.actionrow{display:none !important;}
+    .shell{display:block;max-width:none;}
+    main{padding:0;}
+    section,.cover{
+      box-shadow:none;border:1px solid #999;break-inside:avoid;
+      page-break-inside:avoid;margin-bottom:14px;
+    }
+    .frow{break-inside:avoid;}
+    textarea,input{background:#fff !important;}
+    h1{font-size:26px;}
+    a[href]::after{content:"";}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ TOP BAR ============ -->
+<div class="topbar">
+  <span class="mark">Persmon&nbsp;Technologies</span>
+  <span class="tb-title">Audit Management System &mdash; <b>Discovery Questionnaire</b></span>
+  <button class="btn navtoggle" id="navToggle">Sections &#9662;</button>
+  <div class="progwrap">
+    <div class="progbar"><i id="progFill"></i></div>
+    <span class="progtext" id="progText">0 / 0</span>
+  </div>
+  <button class="btn" id="btnImport">Import</button>
+  <button class="btn danger" id="btnClear">Clear</button>
+  <button class="btn" id="btnExport">Export JSON</button>
+  <button class="btn primary" id="btnPrint">Print / PDF</button>
+  <input type="file" id="fileInput" accept="application/json" style="display:none">
+</div>
+
+<div class="shell">
+
+  <!-- ============ SIDE NAV ============ -->
+  <nav class="sidenav" id="sidenav">
+    <h4>Contents</h4>
+    <a class="navlink" data-target="s0"><span class="nx">00</span> Engagement cover<span class="dot"></span></a>
+    <a class="navlink" data-target="s1"><span class="nx">01</span> Market landscape<span class="dot"></span></a>
+    <a class="navlink" data-target="s2"><span class="nx">02</span> Firm profile &amp; context<span class="dot"></span></a>
+    <a class="navlink" data-target="s3"><span class="nx">03</span> Standards &amp; compliance<span class="dot"></span></a>
+    <a class="navlink" data-target="s4"><span class="nx">04</span> Audit lifecycle features<span class="dot"></span></a>
+    <a class="navlink" data-target="s5"><span class="nx">05</span> Collaboration &amp; clients<span class="dot"></span></a>
+    <a class="navlink" data-target="s6"><span class="nx">06</span> Data, analytics &amp; AI<span class="dot"></span></a>
+    <a class="navlink" data-target="s7"><span class="nx">07</span> Practice management<span class="dot"></span></a>
+    <a class="navlink" data-target="s8"><span class="nx">08</span> Reporting &amp; dashboards<span class="dot"></span></a>
+    <a class="navlink" data-target="s9"><span class="nx">09</span> Users, roles &amp; access<span class="dot"></span></a>
+    <a class="navlink" data-target="s10"><span class="nx">10</span> Integrations<span class="dot"></span></a>
+    <a class="navlink" data-target="s11"><span class="nx">11</span> Non-functional needs<span class="dot"></span></a>
+    <a class="navlink" data-target="s12"><span class="nx">12</span> Constraints &amp; success<span class="dot"></span></a>
+    <a class="navlink" data-target="s13"><span class="nx">13</span> Summary &amp; sign-off<span class="dot"></span></a>
+  </nav>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+    <form id="doc" onsubmit="return false;">
+
+    <!-- ===== COVER ===== -->
+    <div class="cover" id="s0">
+      <p class="eyebrow">Software Discovery &amp; Requirements Instrument</p>
+      <h1>Audit Management System<br>Discovery &amp; Requirements Questionnaire</h1>
+      <p class="lede">A structured instrument for the stakeholder workshop with the prospective audit-firm client. Its purpose is to surface, prioritise and document <b>what the audit management system must do</b> &mdash; the features, the workflows, the constraints &mdash; so the build scope is grounded in evidence rather than assumption.</p>
+
+      <div class="metagrid">
+        <label><span class="lab">Client / Audit firm</span><input type="text" name="meta_client" placeholder="Firm name"></label>
+        <label><span class="lab">ICPAU firm no. / practising no.</span><input type="text" name="meta_icpau" placeholder="AF____ / P____"></label>
+        <label><span class="lab">Workshop date</span><input type="date" name="meta_date"></label>
+        <label><span class="lab">Location / mode</span><input type="text" name="meta_location" placeholder="e.g. Kampala office / virtual"></label>
+        <label><span class="lab">Facilitator (Persmon)</span><input type="text" name="meta_facilitator" placeholder="Name &amp; role"></label>
+        <label><span class="lab">Client attendees &amp; roles</span><input type="text" name="meta_attendees" placeholder="Names &amp; roles"></label>
+        <label><span class="lab">Engagement / project reference</span><input type="text" name="meta_ref" placeholder="Internal ref"></label>
+        <label><span class="lab">Document version</span><input type="text" name="meta_version" placeholder="e.g. v1.0 — draft"></label>
+      </div>
+
+      <div class="howto">
+        <div class="card">
+          <b>How to use this document</b>
+          <p>Work through each section live with the client. Capture answers in the fields directly. For every feature row, agree a <b>priority</b> together &mdash; the conversation about <i>why</i> matters as much as the rating. Use the Notes column for caveats, examples and exceptions.</p>
+        </div>
+        <div class="card">
+          <b>Priority key (MoSCoW)</b>
+          <p>Each feature is rated for the <b>first release (v1)</b> of the system, not the eventual wish-list.</p>
+          <div class="keylegend">
+            <span class="chip must">MUST &mdash; v1 fails without it</span>
+            <span class="chip should">SHOULD &mdash; important, not vital</span>
+            <span class="chip could">COULD &mdash; desirable if capacity allows</span>
+            <span class="chip no">N/A &mdash; not needed / later phase</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-banner">
+      <span class="ndot"></span>
+      <span>This form holds answers in the browser only &mdash; it does <b>not</b> auto-save. Use <b>Export JSON</b> to save your progress to a file, and <b>Import</b> to resume later. Use <b>Print / PDF</b> for the signed record copy.</span>
+    </div>
+
+    <!-- ===== SECTION 1 — LANDSCAPE ===== -->
+    <section id="s1">
+      <div class="sechead">
+        <span class="secnum">01</span>
+        <div>
+          <h2>Market landscape &mdash; reference</h2>
+          <p>A scan of the tools audit and assurance teams already use, so the client can position what they want relative to what exists. This section is reference material &mdash; review it together, then use the questions to capture the client&rsquo;s reaction.</p>
+        </div>
+      </div>
+
+      <h3><span class="h3n">1.1</span> The three sub-markets of &ldquo;audit software&rdquo;</h3>
+      <p class="subnote">&ldquo;Audit management system&rdquo; means different things in different markets. It is worth being explicit about which one the client is actually asking for &mdash; most Ugandan practising firms sit in the first row.</p>
+      <div class="tablewrap">
+        <table class="cmp">
+          <thead><tr><th style="width:150px">Sub-market</th><th>What it does</th><th>Representative tools</th><th style="width:150px">Fit for a UG practising firm</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="tag fin">Financial&nbsp;/&nbsp;assurance</span></td>
+              <td>Runs the <b>statutory audit engagement</b> end to end: trial balance import, account mapping, risk assessment, electronic working papers, review &amp; sign-off, financial statements and the audit report.</td>
+              <td>CaseWare (Audit / Working Papers + IDEA), CCH Axcess Engagement, Thomson Reuters AdvanceFlow, AuditFile, Inflo</td>
+              <td><b>Primary fit.</b> This is what most ICPAU-registered firms mean by an audit system.</td>
+            </tr>
+            <tr>
+              <td><span class="tag ia">Internal audit&nbsp;/&nbsp;GRC</span></td>
+              <td>Runs an <b>internal audit function</b>: annual planning, audit universe, risk-based scheduling, fieldwork, issue &amp; remediation tracking, board-level dashboards.</td>
+              <td>TeamMate+, AuditBoard, Diligent HighBond, MetricStream, Workiva, Resolver, SAP Audit Management</td>
+              <td>Relevant if the firm offers internal audit / risk advisory as a service line, or for in-house IA departments.</td>
+            </tr>
+            <tr>
+              <td><span class="tag ehs">Compliance&nbsp;/&nbsp;inspection</span></td>
+              <td>Runs <b>checklist-based ISO, quality, EHS and field inspections</b>: templates, scoring, non-conformities, corrective actions, mobile/offline capture.</td>
+              <td>Audit Pro (Omnex), AuditPRO.com, SafetyCulture</td>
+              <td>Usually out of scope &mdash; but a good reference for checklist, mobile and offline patterns.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3><span class="h3n">1.2</span> Feature reference &mdash; what the established tools commonly offer</h3>
+      <p class="subnote">Recurring capabilities across the financial-audit and internal-audit tools above. Use this as a prompt list &mdash; not every item will matter to this client.</p>
+      <div class="tablewrap">
+        <table class="cmp">
+          <thead><tr><th style="width:190px">Capability area</th><th>Typically includes</th></tr></thead>
+          <tbody>
+            <tr><td><b>Engagement workflow</b></td><td>Planning &rarr; fieldwork &rarr; review &rarr; reporting &rarr; archive &rarr; follow-up, with configurable stage gates.</td></tr>
+            <tr><td><b>Risk-based planning</b></td><td>Audit universe, annual plan, materiality, risk register, linking risks to assertions and procedures.</td></tr>
+            <tr><td><b>Electronic working papers</b></td><td>Central engagement file, indexed folders, version history, cross-referencing, tickmarks, document locking after archive.</td></tr>
+            <tr><td><b>Trial balance &amp; mapping</b></td><td>TB import, account grouping to FS lines, auto lead schedules, prior-year comparatives, journal-entry testing.</td></tr>
+            <tr><td><b>Templates &amp; methodology</b></td><td>Audit programmes, checklists and document templates aligned to ISA / IIA / firm methodology, updated as standards change.</td></tr>
+            <tr><td><b>Findings &amp; CAPA</b></td><td>Findings register, summary of misstatements, control deficiencies, corrective actions with owners and due dates.</td></tr>
+            <tr><td><b>Review &amp; sign-off</b></td><td>Review notes, multi-level review, engagement quality reviews, time-stamped electronic sign-off, full activity audit trail.</td></tr>
+            <tr><td><b>Client collaboration</b></td><td>&ldquo;Prepared by client&rdquo; (PBC) request lists, secure document portal, request tracking.</td></tr>
+            <tr><td><b>Analytics &amp; AI</b></td><td>Full-ledger analytics / CAATs, anomaly detection, document data extraction (OCR), AI drafting and summarisation.</td></tr>
+            <tr><td><b>Practice management</b></td><td>Time &amp; billing, budget vs. actual, resource scheduling, engagement profitability, client database.</td></tr>
+            <tr><td><b>Platform &amp; security</b></td><td>Cloud or on-premise, role-based access, MFA, encryption, backups, API/SSO integration, mobile and offline access.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <b>Facilitator note.</b> The big international tools are powerful but priced and built for large markets. The opportunity for a Uganda-built system is usually <b>fit, price and support</b> &mdash; ISA- and ICPAU-aligned out of the box, priced for SMPs, tolerant of intermittent connectivity, and supported locally. Keep steering the client toward what <i>they</i> need rather than feature-matching the incumbents.
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">1.3 &nbsp; Which sub-market does the client&rsquo;s need fall into? <span class="opt">(select all that apply)</span></span>
+        <div class="opts" data-checkgroup>
+          <label class="opt-pill"><input type="checkbox" name="cb_submarket" value="financial"><span class="mark box"></span>Financial / assurance engagements</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_submarket" value="internal"><span class="mark box"></span>Internal audit / risk advisory</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_submarket" value="compliance"><span class="mark box"></span>Compliance / inspection / ISO</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_submarket" value="unsure"><span class="mark box"></span>Unsure — to be clarified</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">1.4 &nbsp; Has the client used or evaluated any existing audit tools? What did they like or dislike?</span>
+        <textarea name="q_existing_tools" placeholder="Tools tried, what worked, what frustrated them, why they moved on…"></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">1.5 &nbsp; In one or two sentences, how does the client describe the system they want?</span>
+        <textarea name="q_client_vision" placeholder="Capture it in the client’s own words…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 2 — FIRM PROFILE ===== -->
+    <section id="s2">
+      <div class="sechead">
+        <span class="secnum">02</span>
+        <div>
+          <h2>Firm profile &amp; operating context</h2>
+          <p>Who the firm is and how it works today. This shapes scale, complexity and the realities the system must fit into.</p>
+        </div>
+      </div>
+
+      <h3><span class="h3n">2.1</span> Firm structure &amp; scale</h3>
+      <div class="inline-fields">
+        <div class="field"><span class="ftiny">No. of partners</span><input type="text" name="q_partners"></div>
+        <div class="field"><span class="ftiny">Managers / supervisors</span><input type="text" name="q_managers"></div>
+        <div class="field"><span class="ftiny">Seniors</span><input type="text" name="q_seniors"></div>
+        <div class="field"><span class="ftiny">Associates / trainees</span><input type="text" name="q_associates"></div>
+        <div class="field"><span class="ftiny">Admin / support</span><input type="text" name="q_admin"></div>
+        <div class="field"><span class="ftiny">Office locations</span><input type="text" name="q_offices" placeholder="e.g. Kampala + 1 branch"></div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">2.2 &nbsp; Approximate number of engagements completed per year</span>
+        <div class="inline-fields">
+          <div class="field"><span class="ftiny">Statutory / financial audits</span><input type="text" name="q_eng_statutory"></div>
+          <div class="field"><span class="ftiny">Other assurance / reviews</span><input type="text" name="q_eng_other"></div>
+          <div class="field"><span class="ftiny">Non-assurance (tax, advisory…)</span><input type="text" name="q_eng_nonassurance"></div>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">2.3 &nbsp; Types of engagement the system must support <span class="opt">(select all)</span></span>
+        <div class="opts" data-checkgroup>
+          <label class="opt-pill"><input type="checkbox" name="cb_engtypes" value="statutory"><span class="mark box"></span>Statutory financial statement audit</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_engtypes" value="ngo"><span class="mark box"></span>NGO / donor / grant audits</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_engtypes" value="public"><span class="mark box"></span>Government / public sector (IPSAS)</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_engtypes" value="rbs"><span class="mark box"></span>Retirement benefit schemes (URBRA)</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_engtypes" value="review"><span class="mark box"></span>Reviews / compilations</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_engtypes" value="aup"><span class="mark box"></span>Agreed-upon procedures</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_engtypes" value="internal"><span class="mark box"></span>Internal audit</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_engtypes" value="forensic"><span class="mark box"></span>Forensic / investigation</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_engtypes" value="tax"><span class="mark box"></span>Tax engagements</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_engtypes" value="other"><span class="mark box"></span>Other (note below)</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">2.4 &nbsp; Main client industries served <span class="opt">(free text)</span></span>
+        <textarea name="q_client_industries" placeholder="e.g. NGOs, SACCOs, manufacturing, hospitality, schools, microfinance…"></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">2.5 &nbsp; Seasonality &mdash; when are the peak periods, and how severe is the crunch?</span>
+        <textarea name="q_seasonality" placeholder="e.g. heavy Jan–Jun for December year-ends; describe the staffing pressure…"></textarea>
+      </div>
+
+      <h3><span class="h3n">2.6</span> Current tools &amp; ways of working</h3>
+      <p class="subnote">What the firm uses today for the audit process &mdash; including spreadsheets, Word templates, shared drives and paper.</p>
+      <div class="qblock">
+        <span class="qlabel">Current state <span class="opt">(select all)</span></span>
+        <div class="opts" data-checkgroup>
+          <label class="opt-pill"><input type="checkbox" name="cb_current" value="excel"><span class="mark box"></span>Excel working papers</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_current" value="word"><span class="mark box"></span>Word templates / manuals</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_current" value="paper"><span class="mark box"></span>Paper files</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_current" value="shareddrive"><span class="mark box"></span>Shared / network drive</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_current" value="cloudstorage"><span class="mark box"></span>Cloud storage (Drive / OneDrive)</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_current" value="dedicated"><span class="mark box"></span>A dedicated audit tool</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_current" value="accounting"><span class="mark box"></span>Accounting software only</label>
+        </div>
+      </div>
+      <div class="qblock">
+        <span class="qlabel">2.7 &nbsp; The three biggest pain points in the current process</span>
+        <textarea name="q_painpoints" placeholder="1.&#10;2.&#10;3."></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 3 — STANDARDS ===== -->
+    <section id="s3">
+      <div class="sechead">
+        <span class="secnum">03</span>
+        <div>
+          <h2>Standards, methodology &amp; regulatory compliance</h2>
+          <p>The professional and regulatory frame the system must operate inside. In Uganda this centres on ISA and the ICPAU regime &mdash; getting this right is a credibility requirement, not a nice-to-have.</p>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">3.1 &nbsp; Reporting &amp; auditing frameworks the system must accommodate <span class="opt">(select all)</span></span>
+        <div class="opts" data-checkgroup>
+          <label class="opt-pill"><input type="checkbox" name="cb_frameworks" value="isa"><span class="mark box"></span>ISA (International Standards on Auditing)</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_frameworks" value="isalce"><span class="mark box"></span>ISA for LCE (less complex entities)</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_frameworks" value="ifrs"><span class="mark box"></span>IFRS</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_frameworks" value="ifrssme"><span class="mark box"></span>IFRS for SMEs</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_frameworks" value="ipsas"><span class="mark box"></span>IPSAS (public sector)</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_frameworks" value="isre"><span class="mark box"></span>ISRE / ISAE (reviews &amp; assurance)</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_frameworks" value="other"><span class="mark box"></span>Other (note below)</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">3.2 &nbsp; Quality management standards the system should help the firm comply with <span class="opt">(select all)</span></span>
+        <div class="opts" data-checkgroup>
+          <label class="opt-pill"><input type="checkbox" name="cb_qm" value="isqm1"><span class="mark box"></span>ISQM 1 &mdash; firm-level quality management</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_qm" value="isqm2"><span class="mark box"></span>ISQM 2 &mdash; engagement quality reviews</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_qm" value="isa220"><span class="mark box"></span>ISA 220 (Revised) &mdash; engagement quality management</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_qm" value="isa230"><span class="mark box"></span>ISA 230 &mdash; audit documentation standard</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">3.3 &nbsp; Whose audit methodology will the system encode?</span>
+        <div class="opts col" data-radiogroup>
+          <label class="opt-pill"><input type="radio" name="q_methodology" value="firm"><span class="mark circle"></span>The firm&rsquo;s own documented methodology</label>
+          <label class="opt-pill"><input type="radio" name="q_methodology" value="icpau"><span class="mark circle"></span>ICPAU sample audit manual / sample quality control manual</label>
+          <label class="opt-pill"><input type="radio" name="q_methodology" value="thirdparty"><span class="mark circle"></span>A licensed third-party methodology</label>
+          <label class="opt-pill"><input type="radio" name="q_methodology" value="tbd"><span class="mark circle"></span>Not yet decided — needs to be developed as part of the project</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">3.4 &nbsp; How important is it that the file structure is ready for an ICPAU Quality Assurance review?</span>
+        <div class="opts" data-radiogroup>
+          <label class="opt-pill"><input type="radio" name="q_qa_importance" value="critical"><span class="mark circle"></span>Critical &mdash; a core reason for the project</label>
+          <label class="opt-pill"><input type="radio" name="q_qa_importance" value="important"><span class="mark circle"></span>Important</label>
+          <label class="opt-pill"><input type="radio" name="q_qa_importance" value="minor"><span class="mark circle"></span>Minor consideration</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">3.5 &nbsp; Other regulators whose requirements touch the firm&rsquo;s engagements <span class="opt">(select all)</span></span>
+        <div class="opts" data-checkgroup>
+          <label class="opt-pill"><input type="checkbox" name="cb_regulators" value="bou"><span class="mark box"></span>Bank of Uganda</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_regulators" value="urbra"><span class="mark box"></span>URBRA</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_regulators" value="ira"><span class="mark box"></span>Insurance Regulatory Authority</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_regulators" value="ura"><span class="mark box"></span>URA (tax)</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_regulators" value="use"><span class="mark box"></span>Uganda Securities Exchange</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_regulators" value="ngo"><span class="mark box"></span>NGO Bureau</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_regulators" value="other"><span class="mark box"></span>Other (note below)</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">3.6 &nbsp; Document retention &amp; archive rules the system must enforce</span>
+        <textarea name="q_retention" placeholder="Retention period, assembly/archive window after sign-off, where archived files must live, who may access them…"></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">3.7 &nbsp; Notes on standards &amp; compliance</span>
+        <textarea name="q_standards_notes" placeholder="Anything else raised during this section…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 4 — AUDIT LIFECYCLE FEATURES ===== -->
+    <section id="s4">
+      <div class="sechead">
+        <span class="secnum">04</span>
+        <div>
+          <h2>Audit lifecycle &mdash; feature requirements</h2>
+          <p>The core of the questionnaire. Walk each engagement-lifecycle module with the client and agree a v1 priority per feature. Use the Notes column generously &mdash; exceptions and examples are where the real requirements hide.</p>
+        </div>
+      </div>
+
+      <h3><span class="h3n">4.1</span> Annual planning &amp; audit universe</h3>
+      <div class="ftable" data-module="mod_4_1"></div>
+
+      <h3><span class="h3n">4.2</span> Engagement acceptance &amp; continuance</h3>
+      <div class="ftable" data-module="mod_4_2"></div>
+
+      <h3><span class="h3n">4.3</span> Planning &amp; risk assessment</h3>
+      <div class="ftable" data-module="mod_4_3"></div>
+
+      <h3><span class="h3n">4.4</span> Trial balance &amp; account mapping</h3>
+      <div class="ftable" data-module="mod_4_4"></div>
+
+      <h3><span class="h3n">4.5</span> Working papers &amp; documentation</h3>
+      <div class="ftable" data-module="mod_4_5"></div>
+
+      <h3><span class="h3n">4.6</span> Fieldwork execution</h3>
+      <div class="ftable" data-module="mod_4_6"></div>
+
+      <h3><span class="h3n">4.7</span> Findings, misstatements &amp; exceptions</h3>
+      <div class="ftable" data-module="mod_4_7"></div>
+
+      <h3><span class="h3n">4.8</span> Review &amp; sign-off</h3>
+      <div class="ftable" data-module="mod_4_8"></div>
+
+      <h3><span class="h3n">4.9</span> Reporting &amp; deliverables</h3>
+      <div class="ftable" data-module="mod_4_9"></div>
+
+      <h3><span class="h3n">4.10</span> Archiving, rollforward &amp; retention</h3>
+      <div class="ftable" data-module="mod_4_10"></div>
+
+      <h3><span class="h3n">4.11</span> Issue follow-up &amp; corrective actions</h3>
+      <div class="ftable" data-module="mod_4_11"></div>
+
+      <div class="qblock">
+        <span class="qlabel">4.12 &nbsp; Any lifecycle step, document or routine that is missing from the lists above?</span>
+        <textarea name="q_lifecycle_gaps" placeholder="Capture anything specific to this firm’s process…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 5 — COLLABORATION ===== -->
+    <section id="s5">
+      <div class="sechead">
+        <span class="secnum">05</span>
+        <div>
+          <h2>Collaboration &amp; client interaction</h2>
+          <p>How the audit team works together, and how the firm exchanges information with the audited entity.</p>
+        </div>
+      </div>
+      <div class="ftable" data-module="mod_5"></div>
+      <div class="qblock">
+        <span class="qlabel">5.1 &nbsp; How does the firm exchange documents with clients today, and what goes wrong with it?</span>
+        <textarea name="q_client_exchange" placeholder="Email, WhatsApp, USB, physical delivery… and the friction it causes…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 6 — DATA & AI ===== -->
+    <section id="s6">
+      <div class="sechead">
+        <span class="secnum">06</span>
+        <div>
+          <h2>Data, analytics &amp; automation</h2>
+          <p>Getting data into the system, and what intelligence the system should add on top of it.</p>
+        </div>
+      </div>
+      <div class="ftable" data-module="mod_6"></div>
+      <div class="qblock">
+        <span class="qlabel">6.1 &nbsp; Which accounting systems do the firm&rsquo;s clients commonly use? <span class="opt">(import sources)</span></span>
+        <div class="opts" data-checkgroup>
+          <label class="opt-pill"><input type="checkbox" name="cb_accsys" value="quickbooks"><span class="mark box"></span>QuickBooks</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_accsys" value="sage"><span class="mark box"></span>Sage / Pastel</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_accsys" value="tally"><span class="mark box"></span>Tally</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_accsys" value="xero"><span class="mark box"></span>Xero</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_accsys" value="odoo"><span class="mark box"></span>Odoo / ERPNext</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_accsys" value="sun"><span class="mark box"></span>SunSystems / SAP / other ERP</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_accsys" value="excel"><span class="mark box"></span>Excel / manual ledgers</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_accsys" value="other"><span class="mark box"></span>Other (note below)</label>
+        </div>
+      </div>
+      <div class="qblock">
+        <span class="qlabel">6.2 &nbsp; How does the client feel about AI-assisted features (drafting, anomaly detection)? Any concerns?</span>
+        <textarea name="q_ai_stance" placeholder="Appetite, scepticism, confidentiality concerns, regulatory caution…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 7 — PRACTICE MANAGEMENT ===== -->
+    <section id="s7">
+      <div class="sechead">
+        <span class="secnum">07</span>
+        <div>
+          <h2>Practice management</h2>
+          <p>The commercial layer around the audit work &mdash; time, billing, resourcing and profitability. Decide early whether this is in scope for v1 or a later phase.</p>
+        </div>
+      </div>
+      <div class="ftable" data-module="mod_7"></div>
+      <div class="qblock">
+        <span class="qlabel">7.1 &nbsp; Should practice management be part of v1, or a later phase?</span>
+        <div class="opts" data-radiogroup>
+          <label class="opt-pill"><input type="radio" name="q_pm_phase" value="v1"><span class="mark circle"></span>Part of v1</label>
+          <label class="opt-pill"><input type="radio" name="q_pm_phase" value="later"><span class="mark circle"></span>Later phase</label>
+          <label class="opt-pill"><input type="radio" name="q_pm_phase" value="external"><span class="mark circle"></span>Stays in a separate / existing system</label>
+          <label class="opt-pill"><input type="radio" name="q_pm_phase" value="tbd"><span class="mark circle"></span>To be decided</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 8 — REPORTING & DASHBOARDS ===== -->
+    <section id="s8">
+      <div class="sechead">
+        <span class="secnum">08</span>
+        <div>
+          <h2>Reporting &amp; dashboards</h2>
+          <p>What management and partners need to <i>see</i> &mdash; portfolio oversight, status, risk and the firm&rsquo;s own performance.</p>
+        </div>
+      </div>
+      <div class="ftable" data-module="mod_8"></div>
+      <div class="qblock">
+        <span class="qlabel">8.1 &nbsp; What does a partner most want to know at a glance on a Monday morning?</span>
+        <textarea name="q_partner_view" placeholder="The single most valuable view would answer…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 9 — USERS & ROLES ===== -->
+    <section id="s9">
+      <div class="sechead">
+        <span class="secnum">09</span>
+        <div>
+          <h2>Users, roles &amp; access control</h2>
+          <p>Who uses the system, what each role may see and do, and how many concurrent users to plan for.</p>
+        </div>
+      </div>
+
+      <h3><span class="h3n">9.1</span> Roles &amp; expected user counts</h3>
+      <p class="subnote">Capture how many people sit in each role today and the realistic figure 2&ndash;3 years out. This drives the licensing and concurrency model.</p>
+      <div class="counttable">
+        <div class="crow chead"><div>Role</div><div>Users today</div><div>Projected (2&ndash;3 yrs)</div></div>
+        <div class="crow"><div class="ccell">Partner</div><div class="ccell"><input type="text" name="q_role_partner_now"></div><div class="ccell"><input type="text" name="q_role_partner_future"></div></div>
+        <div class="crow"><div class="ccell">Manager / supervisor</div><div class="ccell"><input type="text" name="q_role_manager_now"></div><div class="ccell"><input type="text" name="q_role_manager_future"></div></div>
+        <div class="crow"><div class="ccell">Senior / in-charge</div><div class="ccell"><input type="text" name="q_role_senior_now"></div><div class="ccell"><input type="text" name="q_role_senior_future"></div></div>
+        <div class="crow"><div class="ccell">Associate / trainee</div><div class="ccell"><input type="text" name="q_role_associate_now"></div><div class="ccell"><input type="text" name="q_role_associate_future"></div></div>
+        <div class="crow"><div class="ccell">EQ reviewer</div><div class="ccell"><input type="text" name="q_role_eqcr_now"></div><div class="ccell"><input type="text" name="q_role_eqcr_future"></div></div>
+        <div class="crow"><div class="ccell">Administrator</div><div class="ccell"><input type="text" name="q_role_admin_now"></div><div class="ccell"><input type="text" name="q_role_admin_future"></div></div>
+        <div class="crow"><div class="ccell">Client / external user</div><div class="ccell"><input type="text" name="q_role_client_now"></div><div class="ccell"><input type="text" name="q_role_client_future"></div></div>
+      </div>
+
+      <h3><span class="h3n">9.2</span> Access control requirements</h3>
+      <div class="ftable" data-module="mod_9"></div>
+
+      <div class="qblock">
+        <span class="qlabel">9.3 &nbsp; Are there access rules specific to this firm? <span class="opt">(e.g. partners only see their own portfolio, trainees cannot export)</span></span>
+        <textarea name="q_access_rules" placeholder="Describe any firm-specific permission rules…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 10 — INTEGRATIONS ===== -->
+    <section id="s10">
+      <div class="sechead">
+        <span class="secnum">10</span>
+        <div>
+          <h2>Integrations</h2>
+          <p>What the system must connect to. Each integration is scope and cost &mdash; rate them honestly for v1.</p>
+        </div>
+      </div>
+      <div class="ftable" data-module="mod_10"></div>
+      <div class="qblock">
+        <span class="qlabel">10.1 &nbsp; Any specific product, portal or in-house system the integration must target?</span>
+        <textarea name="q_integration_targets" placeholder="Name the exact systems and what data should flow…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 11 — NON-FUNCTIONAL ===== -->
+    <section id="s11">
+      <div class="sechead">
+        <span class="secnum">11</span>
+        <div>
+          <h2>Non-functional requirements</h2>
+          <p>How the system must behave &mdash; deployment, connectivity, security, performance and localisation. In the Ugandan context, connectivity and hosting choices deserve real attention.</p>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">11.1 &nbsp; Preferred deployment model</span>
+        <div class="opts col" data-radiogroup>
+          <label class="opt-pill"><input type="radio" name="q_deployment" value="cloud"><span class="mark circle"></span>Vendor-hosted cloud (SaaS)</label>
+          <label class="opt-pill"><input type="radio" name="q_deployment" value="privatecloud"><span class="mark circle"></span>Private cloud (firm&rsquo;s own cloud tenancy)</label>
+          <label class="opt-pill"><input type="radio" name="q_deployment" value="onprem"><span class="mark circle"></span>On-premise (servers in the firm&rsquo;s office)</label>
+          <label class="opt-pill"><input type="radio" name="q_deployment" value="hybrid"><span class="mark circle"></span>Hybrid</label>
+          <label class="opt-pill"><input type="radio" name="q_deployment" value="tbd"><span class="mark circle"></span>To be advised by Persmon</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">11.2 &nbsp; How reliable is internet connectivity where the team works (office and at client sites)?</span>
+        <textarea name="q_connectivity" placeholder="Office vs. field reality, frequency of outages, mobile-data fallback…"></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">11.3 &nbsp; How important is full offline working (fieldwork with no connection, sync later)?</span>
+        <div class="opts" data-radiogroup>
+          <label class="opt-pill"><input type="radio" name="q_offline" value="essential"><span class="mark circle"></span>Essential</label>
+          <label class="opt-pill"><input type="radio" name="q_offline" value="valuable"><span class="mark circle"></span>Valuable</label>
+          <label class="opt-pill"><input type="radio" name="q_offline" value="minor"><span class="mark circle"></span>Minor</label>
+          <label class="opt-pill"><input type="radio" name="q_offline" value="notneeded"><span class="mark circle"></span>Not needed</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">11.4 &nbsp; Data residency &mdash; is in-country (or specific-region) hosting of audit data required?</span>
+        <div class="opts" data-radiogroup>
+          <label class="opt-pill"><input type="radio" name="q_residency" value="incountry"><span class="mark circle"></span>Must be hosted in Uganda</label>
+          <label class="opt-pill"><input type="radio" name="q_residency" value="region"><span class="mark circle"></span>Region acceptable (e.g. Africa)</label>
+          <label class="opt-pill"><input type="radio" name="q_residency" value="any"><span class="mark circle"></span>No specific requirement</label>
+          <label class="opt-pill"><input type="radio" name="q_residency" value="unsure"><span class="mark circle"></span>Unsure — needs checking</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">11.5 &nbsp; Security &amp; resilience expectations <span class="opt">(select all that are required)</span></span>
+        <div class="opts" data-checkgroup>
+          <label class="opt-pill"><input type="checkbox" name="cb_security" value="mfa"><span class="mark box"></span>Multi-factor authentication</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_security" value="encryption"><span class="mark box"></span>Encryption at rest &amp; in transit</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_security" value="trail"><span class="mark box"></span>Full activity audit trail</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_security" value="backup"><span class="mark box"></span>Automated backups</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_security" value="dr"><span class="mark box"></span>Disaster recovery plan</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_security" value="rbac"><span class="mark box"></span>Granular role-based permissions</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_security" value="retention"><span class="mark box"></span>Enforced retention &amp; deletion policy</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_security" value="pentest"><span class="mark box"></span>Independent security testing</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">11.6 &nbsp; Devices &amp; platforms the system must run on <span class="opt">(select all)</span></span>
+        <div class="opts" data-checkgroup>
+          <label class="opt-pill"><input type="checkbox" name="cb_devices" value="desktop"><span class="mark box"></span>Desktop / laptop (Windows)</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_devices" value="mac"><span class="mark box"></span>Mac</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_devices" value="tablet"><span class="mark box"></span>Tablet</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_devices" value="mobile"><span class="mark box"></span>Mobile phone</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_devices" value="browser"><span class="mark box"></span>Any modern browser</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">11.7 &nbsp; Localisation needs</span>
+        <div class="opts" data-checkgroup>
+          <label class="opt-pill"><input type="checkbox" name="cb_localisation" value="ugx"><span class="mark box"></span>UGX as base currency</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_localisation" value="multicurrency"><span class="mark box"></span>Multi-currency support</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_localisation" value="dateformat"><span class="mark box"></span>Local date / number formats</label>
+          <label class="opt-pill"><input type="checkbox" name="cb_localisation" value="language"><span class="mark box"></span>Languages beyond English</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">11.8 &nbsp; Notes on non-functional requirements</span>
+        <textarea name="q_nfr_notes" placeholder="Performance expectations, file-size limits, uptime, anything else raised…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 12 — CONSTRAINTS ===== -->
+    <section id="s12">
+      <div class="sechead">
+        <span class="secnum">12</span>
+        <div>
+          <h2>Project constraints &amp; success criteria</h2>
+          <p>The boundary conditions of the build &mdash; approach, budget, timeline, migration, support &mdash; and how everyone will know the project succeeded.</p>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">12.1 &nbsp; Build approach the client expects</span>
+        <div class="opts col" data-radiogroup>
+          <label class="opt-pill"><input type="radio" name="q_approach" value="bespoke"><span class="mark circle"></span>Bespoke system built from the ground up</label>
+          <label class="opt-pill"><input type="radio" name="q_approach" value="configure"><span class="mark circle"></span>Configure / customise an existing product</label>
+          <label class="opt-pill"><input type="radio" name="q_approach" value="opensource"><span class="mark circle"></span>Build on an open-source base</label>
+          <label class="opt-pill"><input type="radio" name="q_approach" value="open"><span class="mark circle"></span>Open — recommendation expected from Persmon</label>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">12.2 &nbsp; Indicative budget range</span>
+        <div class="inline-fields">
+          <div class="field"><span class="ftiny">Build / one-off (capex)</span><input type="text" name="q_budget_capex"></div>
+          <div class="field"><span class="ftiny">Annual running cost (opex)</span><input type="text" name="q_budget_opex"></div>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">12.3 &nbsp; Target timeline</span>
+        <div class="inline-fields">
+          <div class="field"><span class="ftiny">Desired go-live date</span><input type="text" name="q_golive" placeholder="e.g. before Jan 2027 busy season"></div>
+          <div class="field"><span class="ftiny">Hard deadlines / constraints</span><input type="text" name="q_deadlines"></div>
+        </div>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">12.4 &nbsp; Historical data migration &mdash; what existing data must come into the new system?</span>
+        <textarea name="q_migration" placeholder="Prior-year files, client database, templates, archived engagements… volume and format…"></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">12.5 &nbsp; Training, support &amp; change management expectations</span>
+        <textarea name="q_training_support" placeholder="Who needs training, appetite for change, support hours, response-time expectations…"></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">12.6 &nbsp; Decision-makers &amp; project sponsor on the client side</span>
+        <textarea name="q_decision_makers" placeholder="Who signs off scope, budget and go-live…"></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">12.7 &nbsp; Definition of success &mdash; how will the client judge whether the system was worth it?</span>
+        <textarea name="q_success" placeholder="e.g. audit cycle time down X%, passes ICPAU QA review, staff actually use it, fewer review notes…"></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">12.8 &nbsp; Known risks, constraints or sensitivities</span>
+        <textarea name="q_risks" placeholder="Budget uncertainty, staff resistance, partner scepticism, infrastructure gaps…"></textarea>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 13 — SUMMARY & SIGN-OFF ===== -->
+    <section id="s13">
+      <div class="sechead">
+        <span class="secnum">13</span>
+        <div>
+          <h2>Summary &amp; sign-off</h2>
+          <p>Close the workshop by consolidating the picture and confirming a shared understanding of scope.</p>
+        </div>
+      </div>
+
+      <h3><span class="h3n">13.1</span> Priority tally</h3>
+      <p class="subnote">Live count of every feature rated across sections 4&ndash;10. This is the first cut of the v1 scope &mdash; the &ldquo;Must&rdquo; column is the backbone of the build.</p>
+      <div class="scoregrid">
+        <div class="scorecard must"><div class="sv" id="cntMust">0</div><div class="sl">Must &mdash; v1</div></div>
+        <div class="scorecard should"><div class="sv" id="cntShould">0</div><div class="sl">Should</div></div>
+        <div class="scorecard could"><div class="sv" id="cntCould">0</div><div class="sl">Could</div></div>
+        <div class="scorecard no"><div class="sv" id="cntNo">0</div><div class="sl">N/A / later</div></div>
+      </div>
+      <p class="subnote" id="scoreMeta" style="margin-top:10px;">0 of 0 features rated.</p>
+
+      <div class="qblock">
+        <span class="qlabel">13.2 &nbsp; The three pain points this system most needs to solve</span>
+        <textarea name="q_top_pains" placeholder="1.&#10;2.&#10;3."></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">13.3 &nbsp; The five &ldquo;must-have for v1&rdquo; capabilities, in the client&rsquo;s words</span>
+        <textarea name="q_top_v1" placeholder="1.&#10;2.&#10;3.&#10;4.&#10;5."></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">13.4 &nbsp; Explicitly out of scope for v1 <span class="opt">(agreed exclusions — protects the project later)</span></span>
+        <textarea name="q_out_of_scope" placeholder="What everyone agrees the first release will NOT include…"></textarea>
+      </div>
+
+      <div class="qblock">
+        <span class="qlabel">13.5 &nbsp; Agreed next steps &amp; owners</span>
+        <textarea name="q_next_steps" placeholder="Action — owner — date…"></textarea>
+      </div>
+
+      <h3><span class="h3n">13.6</span> Confirmation of shared understanding</h3>
+      <p class="subnote">Signing confirms the notes above reflect the discussion &mdash; not a contract or final scope, but an agreed record of the discovery workshop.</p>
+      <div class="signgrid">
+        <div class="signbox">
+          <div class="st">For the audit firm</div>
+          <div class="signline"><span class="sll">Name</span><input type="text" name="q_sign_client_name"></div>
+          <div class="signline"><span class="sll">Role</span><input type="text" name="q_sign_client_role"></div>
+          <div class="signline"><span class="sll">Signature</span><input type="text" name="q_sign_client_sig"></div>
+          <div class="signline"><span class="sll">Date</span><input type="date" name="q_sign_client_date"></div>
+        </div>
+        <div class="signbox">
+          <div class="st">For Persmon Technologies</div>
+          <div class="signline"><span class="sll">Name</span><input type="text" name="q_sign_persmon_name"></div>
+          <div class="signline"><span class="sll">Role</span><input type="text" name="q_sign_persmon_role"></div>
+          <div class="signline"><span class="sll">Signature</span><input type="text" name="q_sign_persmon_sig"></div>
+          <div class="signline"><span class="sll">Date</span><input type="date" name="q_sign_persmon_date"></div>
+        </div>
+      </div>
+    </section>
+
+    </form>
+
+    <footer>
+      <div class="fr">PERSMON TECHNOLOGIES &mdash; AUDIT MANAGEMENT SYSTEM DISCOVERY INSTRUMENT</div>
+      <div>Prepared as a requirements-elicitation tool. Reference to ISA, ICPAU and named products is for context only.</div>
+    </footer>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   FEATURE MODULE DATA  — rendered into .ftable[data-module]
+   ============================================================ */
+const MODULES = {
+  mod_4_1: [
+    ["aup_universe","Audit universe / client register","Central register of all current and prospective clients with risk ratings and key attributes."],
+    ["aup_plan","Annual audit plan / engagement calendar","Schedule engagements across the year with target start, fieldwork and reporting dates."],
+    ["aup_pipeline","Engagement pipeline &amp; status board","One view of every live engagement and the stage it has reached."],
+    ["aup_capacity","Capacity vs. plan view","Compares planned engagements against available staff hours to flag overload."]
+  ],
+  mod_4_2: [
+    ["acc_independence","Independence &amp; conflict-of-interest checks","Records and clears independence threats before an engagement is accepted."],
+    ["acc_kyc","Client due diligence / KYC / AML records","Captures and stores the anti-money-laundering and know-your-client checks."],
+    ["acc_letter","Engagement letter generation","Produces the engagement letter from a template, pre-filled with client data."],
+    ["acc_esign","Engagement letter e-signature","Lets the client sign the engagement letter electronically."],
+    ["acc_approval","Acceptance / continuance approval workflow","Routes new and recurring engagements to a partner for documented approval."],
+    ["acc_fee","Fee proposal / quotation","Builds and stores the fee quote linked to the engagement."]
+  ],
+  mod_4_3: [
+    ["pl_materiality","Materiality calculator","Computes overall and performance materiality and the trivial threshold from chosen benchmarks."],
+    ["pl_riskreg","Risk register / risk matrix","Documents identified risks, their assessment and rating (ISA 315)."],
+    ["pl_entity","Understanding the entity &amp; environment","Structured documentation of the client&rsquo;s business, controls and environment."],
+    ["pl_fraud","Fraud risk assessment","Dedicated fraud-risk documentation and response planning (ISA 240)."],
+    ["pl_strategy","Audit strategy &amp; audit plan documents","Generates the overall strategy and detailed plan from the planning inputs."],
+    ["pl_link","Link risks &rarr; assertions &rarr; procedures","Connects each risk to the assertions affected and the procedures that respond to it."]
+  ],
+  mod_4_4: [
+    ["tb_import","Trial balance import","Imports the trial balance from Excel, CSV or accounting software."],
+    ["tb_mapping","Account grouping &amp; mapping to FS lines","Maps ledger accounts to financial-statement line items and groupings."],
+    ["tb_leads","Auto-generated lead schedules","Builds lead schedules automatically from the mapped trial balance."],
+    ["tb_compare","Prior-year comparatives &amp; variance analysis","Pulls prior-year balances and highlights significant movements."],
+    ["tb_je","Journal entry import &amp; testing","Imports the journal listing and supports journal-entry testing (ISA 240)."],
+    ["tb_multi","Multi-currency / consolidation support","Handles foreign-currency balances and group consolidations."]
+  ],
+  mod_4_5: [
+    ["wp_file","Central electronic working paper file","One indexed engagement file holding every working paper."],
+    ["wp_index","Methodology-aligned folder / index structure","Folder and index structure that mirrors the firm&rsquo;s methodology."],
+    ["wp_version","Version control &amp; change history","Tracks every change to a working paper with who and when."],
+    ["wp_templates","Working paper template library","Reusable, firm-approved working paper templates."],
+    ["wp_xref","Cross-referencing between papers","Hyperlinked references that jump between related working papers."],
+    ["wp_tickmarks","Tickmarks &amp; annotations","Standard tickmarks and annotation tools on documents."],
+    ["wp_complete","&lsquo;Experienced auditor&rsquo; completeness checks","Prompts that the file would stand up to ISA 230 review by an outsider."],
+    ["wp_lock","Document locking after archive","Prevents edits to working papers once the file is archived."]
+  ],
+  mod_4_6: [
+    ["fw_programmes","Audit programmes / procedure checklists","Step-by-step procedure lists per audit area, with completion tracking."],
+    ["fw_builder","Customisable checklist / template builder","Lets the firm create and edit its own checklists and programmes."],
+    ["fw_sampling","Sampling tools","Statistical and judgemental sample selection with documentation."],
+    ["fw_evidence","Evidence capture (upload, scan, photo)","Attaches supporting evidence to procedures from file, scan or camera."],
+    ["fw_confirm","Confirmations management","Tracks bank, debtor, creditor and lawyer confirmations end to end."],
+    ["fw_status","Test status &amp; completion tracking","Shows how far each area and the whole engagement has progressed."],
+    ["fw_offline","Offline fieldwork capability","Allows fieldwork with no connection, syncing when back online."]
+  ],
+  mod_4_7: [
+    ["fd_register","Findings / exceptions register","Central log of every exception and finding raised during the audit."],
+    ["fd_sum","Summary of adjusted &amp; unadjusted misstatements","Maintains the SUM / SAD schedule and its effect on the financials."],
+    ["fd_control","Control deficiencies log","Records control weaknesses for the management letter."],
+    ["fd_severity","Severity / risk classification","Classifies each finding by significance and risk."],
+    ["fd_link","Link findings to working papers &amp; evidence","Ties every finding back to the paper and evidence that supports it."]
+  ],
+  mod_4_8: [
+    ["rv_notes","Review notes / coaching notes workflow","Raise, assign, respond to and clear review notes inside the file."],
+    ["rv_multi","Multi-level review (senior &rarr; manager &rarr; partner)","Supports sequential review at each level of the team."],
+    ["rv_eqcr","Engagement quality review (EQCR)","Dedicated workflow for the engagement quality reviewer (ISA 220 Revised)."],
+    ["rv_sign","Time-stamped electronic sign-off","Records each sign-off with identity and timestamp."],
+    ["rv_clear","Review note clearing &amp; status","Shows which notes are open, answered or cleared."],
+    ["rv_gate","Completion checklist &amp; partner approval gate","A final checklist that must clear before the partner can sign."]
+  ],
+  mod_4_9: [
+    ["rp_report","Auditor&rsquo;s report generation","Produces the auditor&rsquo;s report aligned to ISA 700 / 701."],
+    ["rp_kam","Key Audit Matters drafting support","Helps identify and draft KAM where required (ISA 701)."],
+    ["rp_ml","Management letter / letter of weaknesses","Builds the management letter from the logged control deficiencies."],
+    ["rp_fs","Financial statements drafting / linkage","Drafts or links the financial statements to the mapped trial balance."],
+    ["rp_rep","Representation letter generation","Generates the management representation letter (ISA 580)."],
+    ["rp_brand","Report template library &amp; firm branding","Firm-branded, reusable report and letter templates."],
+    ["rp_export","Export to Word / PDF","Exports finished deliverables to editable Word and final PDF."]
+  ],
+  mod_4_10: [
+    ["ar_archive","Engagement archive &amp; lock","Formally archives and locks the file within the assembly period."],
+    ["ar_retention","Retention enforcement &amp; retrieval","Enforces the retention period and allows controlled retrieval."],
+    ["ar_rollforward","Year-on-year rollforward / carry-forward","Carries forward structure, templates and prior data to the next year."],
+    ["ar_trail","Audit trail of post-archive access","Logs any access to a file after it has been archived."]
+  ],
+  mod_4_11: [
+    ["fu_track","Action / recommendation tracking","Tracks every recommendation with an owner and a due date."],
+    ["fu_remediation","Client remediation status &amp; reminders","Monitors whether the client has acted, with automated reminders."],
+    ["fu_link","Follow-up audit linkage","Links open actions into the next period&rsquo;s engagement."],
+    ["fu_escalate","Overdue action escalation","Escalates actions that pass their due date."]
+  ],
+  mod_5: [
+    ["co_pbc","&lsquo;Prepared by client&rsquo; (PBC) request lists","Builds and tracks the list of documents the client must provide."],
+    ["co_portal","Secure client document portal","A secure space for the client to upload and exchange files."],
+    ["co_comments","In-app comments &amp; @mentions","Team members discuss and tag each other inside the engagement."],
+    ["co_notify","Notifications &amp; reminders","Email and in-app alerts for assignments, due dates and changes."],
+    ["co_realtime","Real-time multi-user editing","Several team members work in the same engagement at once."],
+    ["co_mobile","Mobile access for review on the go","Partners and managers can review and respond from a phone or tablet."]
+  ],
+  mod_6: [
+    ["da_import","Import from accounting / ERP systems","Pulls ledgers and balances directly from common accounting systems."],
+    ["da_bank","Bank statement / GL ingestion","Ingests bank statements and general-ledger detail for testing."],
+    ["da_caat","Full-ledger analytics / CAATs","Tests entire populations rather than samples."],
+    ["da_anomaly","Anomaly &amp; risk scoring (AI)","Surfaces unusual transactions and scores them by risk."],
+    ["da_ocr","Document data extraction (OCR)","Reads figures and details out of PDFs and scanned documents."],
+    ["da_aidraft","AI drafting &amp; summarisation","Drafts narratives and summarises client documents to speed up the file."],
+    ["da_recalc","Automated lead schedules &amp; recalculation","Rebuilds schedules and recalculates automatically when data changes."]
+  ],
+  mod_7: [
+    ["pm_time","Time recording / timesheets","Staff log time against engagements and tasks."],
+    ["pm_budget","Budget vs. actual (hours &amp; fees)","Compares budgeted hours and fees against what was actually spent."],
+    ["pm_billing","Billing, invoicing &amp; WIP tracking","Raises invoices and tracks work in progress and recoverability."],
+    ["pm_profit","Engagement profitability reporting","Shows the margin on each engagement and client."],
+    ["pm_resource","Staff scheduling / resource allocation","Assigns people to engagements and avoids clashes."],
+    ["pm_crm","Client / contact database (CRM-lite)","A single source for client details, contacts and history."],
+    ["pm_cpd","CPD / staff competency tracking","Tracks each staff member&rsquo;s competencies and CPD hours."]
+  ],
+  mod_8: [
+    ["db_partner","Partner / portfolio dashboard","At-a-glance view of every engagement, its risk and its deadline."],
+    ["db_status","Engagement status &amp; milestone tracking","Shows where each engagement sits against its milestones."],
+    ["db_profit","Realisation &amp; profitability dashboards","Visualises recovery, realisation and profitability across the firm."],
+    ["db_qa","ICPAU QA-readiness / file completeness dashboard","Flags files that are not yet complete or review-ready."],
+    ["db_builder","Custom report builder &amp; exports","Lets the firm build its own reports and export them."],
+    ["db_kpi","Audit KPIs (cycle time, review notes, overruns)","Tracks the firm&rsquo;s own performance metrics over time."]
+  ],
+  mod_9: [
+    ["ac_rbac","Role-based access control","Each role sees and does only what its role permits."],
+    ["ac_granular","Per-engagement permissions","Access can be granted or withheld engagement by engagement."],
+    ["ac_sod","Segregation of duties enforcement","Stops the same person performing and approving the same step."],
+    ["ac_guest","Guest / external reviewer access","Time-limited, restricted access for outside reviewers or regulators."],
+    ["ac_trail","User activity audit trail","A complete, tamper-evident log of who did what and when."]
+  ],
+  mod_10: [
+    ["in_accounting","Accounting software connectors","Direct connectors to QuickBooks, Sage, Tally and similar."],
+    ["in_erp","ERP system integration","Connects to larger ERP platforms used by bigger clients."],
+    ["in_email","Email &amp; calendar integration","Links with Outlook or Google for mail and scheduling."],
+    ["in_esign","E-signature service integration","Connects to an e-signature provider for letters and reports."],
+    ["in_tax","URA / tax portal integration","Connects with URA systems where relevant to the engagement."],
+    ["in_storage","Document storage integration","Links to SharePoint, Google Drive or similar storage."],
+    ["in_api","Open API / webhooks","An API so the firm can connect future tools itself."],
+    ["in_sso","Single sign-on (SSO)","Staff sign in with existing firm credentials."]
+  ]
+};
+
+/* ============================================================
+   RENDER FEATURE TABLES
+   ============================================================ */
+function segHTML(name){
+  const opts = [["must","Must","l-must"],["should","Should","l-should"],["could","Could","l-could"],["no","N/A","l-no"]];
+  let h = '<div class="seg" role="radiogroup" aria-label="Priority">';
+  opts.forEach(o=>{
+    h += '<label class="'+o[2]+'"><input type="radio" name="'+name+'" value="'+o[0]+'">'+o[1]+'</label>';
+  });
+  return h + '</div>';
+}
+document.querySelectorAll('.ftable[data-module]').forEach(box=>{
+  const key = box.getAttribute('data-module');
+  const rows = MODULES[key] || [];
+  let h = '<div class="frow fhead"><div>Feature</div><div>Priority for v1</div><div>Notes / exceptions / examples</div></div>';
+  rows.forEach(r=>{
+    const [id,name,desc] = r;
+    h += '<div class="frow">'
+       +   '<div class="fcell-name"><div class="fn">'+name+'</div><div class="fd">'+desc+'</div></div>'
+       +   '<div class="fcell-prio">'+segHTML('prio_'+id)+'</div>'
+       +   '<div class="fcell-note"><input type="text" name="note_'+id+'" placeholder="Notes…"></div>'
+       + '</div>';
+  });
+  box.innerHTML = h;
+});
+
+/* ============================================================
+   PROGRESS, NAV & SCORING
+   ============================================================ */
+const form = document.getElementById('doc');
+
+function trackables(){
+  // returns {total, done}
+  let total=0, done=0;
+  // text/number/date/textarea with a name
+  form.querySelectorAll('input[type=text],input[type=number],input[type=date],textarea').forEach(el=>{
+    if(!el.name) return;
+    total++;
+    if(el.value && el.value.trim()!=='') done++;
+  });
+  // radio groups
+  const radioNames = new Set();
+  form.querySelectorAll('input[type=radio]').forEach(el=>{ if(el.name) radioNames.add(el.name); });
+  radioNames.forEach(n=>{
+    total++;
+    if(form.querySelector('input[name="'+CSS.escape(n)+'"]:checked')) done++;
+  });
+  // checkbox groups
+  document.querySelectorAll('[data-checkgroup]').forEach(g=>{
+    total++;
+    if(g.querySelector('input[type=checkbox]:checked')) done++;
+  });
+  return {total,done};
+}
+
+function sectionState(id){
+  const sec = document.getElementById(id);
+  if(!sec) return 'empty';
+  let total=0, done=0;
+  sec.querySelectorAll('input[type=text],input[type=number],input[type=date],textarea').forEach(el=>{
+    if(!el.name) return; total++; if(el.value && el.value.trim()!=='') done++;
+  });
+  const rn = new Set();
+  sec.querySelectorAll('input[type=radio]').forEach(el=>{ if(el.name) rn.add(el.name); });
+  rn.forEach(n=>{ total++; if(sec.querySelector('input[name="'+CSS.escape(n)+'"]:checked')) done++; });
+  sec.querySelectorAll('[data-checkgroup]').forEach(g=>{ total++; if(g.querySelector('input:checked')) done++; });
+  if(total===0) return 'empty';
+  if(done===0) return 'empty';
+  if(done>=total) return 'done';
+  return 'part';
+}
+
+function updateScoring(){
+  let must=0,should=0,could=0,no=0;
+  form.querySelectorAll('input[type=radio]:checked').forEach(el=>{
+    if(el.name && el.name.indexOf('prio_')===0){
+      if(el.value==='must')must++;
+      else if(el.value==='should')should++;
+      else if(el.value==='could')could++;
+      else if(el.value==='no')no++;
+    }
+  });
+  // total prio groups
+  const prioNames = new Set();
+  form.querySelectorAll('input[type=radio]').forEach(el=>{ if(el.name && el.name.indexOf('prio_')===0) prioNames.add(el.name); });
+  document.getElementById('cntMust').textContent=must;
+  document.getElementById('cntShould').textContent=should;
+  document.getElementById('cntCould').textContent=could;
+  document.getElementById('cntNo').textContent=no;
+  document.getElementById('scoreMeta').textContent=(must+should+could+no)+' of '+prioNames.size+' features rated.';
+}
+
+function updateAll(){
+  const {total,done} = trackables();
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('progText').textContent = done+' / '+total;
+  // nav dots
+  document.querySelectorAll('.navlink').forEach(a=>{
+    const st = sectionState(a.getAttribute('data-target'));
+    const dot = a.querySelector('.dot');
+    dot.classList.remove('part','done');
+    if(st==='part') dot.classList.add('part');
+    else if(st==='done') dot.classList.add('done');
+  });
+  updateScoring();
+}
+
+form.addEventListener('input', updateAll);
+form.addEventListener('change', updateAll);
+
+/* ---- scroll-spy + nav ---- */
+const navlinks = document.querySelectorAll('.navlink');
+navlinks.forEach(a=>{
+  a.addEventListener('click', ()=>{
+    const t = document.getElementById(a.getAttribute('data-target'));
+    if(t) t.scrollIntoView({behavior:'smooth',block:'start'});
+    document.getElementById('sidenav').classList.remove('open');
+  });
+});
+const spyTargets = [...navlinks].map(a=>document.getElementById(a.getAttribute('data-target')));
+const spy = new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      navlinks.forEach(n=>n.classList.remove('active'));
+      const link = [...navlinks].find(n=>n.getAttribute('data-target')===en.target.id);
+      if(link) link.classList.add('active');
+    }
+  });
+},{rootMargin:'-20% 0px -70% 0px'});
+spyTargets.forEach(t=>{ if(t) spy.observe(t); });
+
+document.getElementById('navToggle').addEventListener('click', ()=>{
+  document.getElementById('sidenav').classList.toggle('open');
+});
+
+/* ============================================================
+   EXPORT / IMPORT / PRINT / CLEAR
+   ============================================================ */
+function serialize(){
+  const data={};
+  form.querySelectorAll('input,textarea,select').forEach(el=>{
+    if(!el.name) return;
+    if(el.type==='radio'){
+      if(el.checked) data[el.name]=el.value;
+      else if(!(el.name in data)) data[el.name]='';
+    } else if(el.type==='checkbox'){
+      if(!Array.isArray(data[el.name])) data[el.name]=[];
+      if(el.checked) data[el.name].push(el.value);
+    } else {
+      data[el.name]=el.value;
+    }
+  });
+  return data;
+}
+function deserialize(data){
+  form.querySelectorAll('input,textarea,select').forEach(el=>{
+    if(!el.name || !(el.name in data)) return;
+    const v=data[el.name];
+    if(el.type==='radio'){ el.checked=(el.value===v); }
+    else if(el.type==='checkbox'){ el.checked=Array.isArray(v)&&v.indexOf(el.value)>-1; }
+    else { el.value=v; }
+  });
+  updateAll();
+}
+
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  const payload = {
+    _document:'Persmon — Audit Management System Discovery Questionnaire',
+    _exported: new Date().toISOString(),
+    responses: serialize()
+  };
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const client = (form.querySelector('[name=meta_client]').value || 'client').trim().replace(/[^a-z0-9]+/gi,'-').toLowerCase();
+  a.href=url;
+  a.download='audit-ams-discovery-'+client+'-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('btnImport').addEventListener('click', ()=>{
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const obj = JSON.parse(reader.result);
+      const resp = obj.responses || obj;
+      deserialize(resp);
+      alert('Responses imported successfully.');
+    }catch(err){
+      alert('Could not read that file — please choose a JSON file exported from this questionnaire.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+});
+
+document.getElementById('btnPrint').addEventListener('click', ()=>{ window.print(); });
+
+document.getElementById('btnClear').addEventListener('click', ()=>{
+  if(confirm('Clear every answer in this questionnaire? This cannot be undone — export first if you want to keep your work.')){
+    form.reset();
+    updateAll();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+});
+
+/* init */
+updateAll();
+</script>
+</body>
+</html>
