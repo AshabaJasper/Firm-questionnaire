@@ -11,11 +11,13 @@ An interactive audit management system discovery questionnaire for capturing cli
 
 ## How To Use
 
-Open `index.html` in a browser and complete the questionnaire section by section. The top bar shows completion progress, and the side navigation marks sections as empty, in progress, or complete.
+Open `index.html` in a browser and complete the questionnaire section by section. The top bar shows completion progress, autosave status, and a `Next Open` shortcut for jumping to the next incomplete section. The side navigation marks sections as empty, in progress, or complete.
 
-Use `Export JSON` to save responses, then `Import JSON` to restore them later. Older JSON exports that used the previous single textarea fields for three pain points are still supported and are mapped into the new separate fields.
+The form saves a private draft in the current browser as you type. Use `Export JSON` to create a portable backup, then `Import JSON` to restore it later. Older JSON exports that used the previous single textarea fields for three pain points are still supported and are mapped into the new separate fields.
 
 Use `Export PDF` when the questionnaire is complete. The print module builds a clean answer report for browser printing or saving as PDF. Use `Export Word` for an editable `.doc` copy, or `Export Excel` for an `.xls` response table.
+
+Feature priority choices and their notes are exported in the same document order as the questionnaire, so each `Must / Should / Could / N/A` answer stays aligned with the correct feature and notes/examples field.
 
 ## Three-Point Fields
 

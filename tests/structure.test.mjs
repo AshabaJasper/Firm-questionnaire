@@ -60,3 +60,27 @@ test('word and excel exports are generated from questionnaire responses', () => 
   assert.match(js, /application\/msword/);
   assert.match(js, /application\/vnd\.ms-excel/);
 });
+
+test('feature priority exports use the feature row label, not the button label', () => {
+  const js = readFileSync(new URL('../app.js', import.meta.url), 'utf8');
+  const labelFunction = js.match(/function labelForField\(el\)\{[\s\S]*?\n\}/)?.[0] ?? '';
+
+  assert.match(labelFunction, /const row = el\.closest\('\.frow'\)/);
+  assert.ok(
+    labelFunction.indexOf("const row = el.closest('.frow')") <
+      labelFunction.indexOf("const label = el.closest('label')"),
+    'feature row lookup must happen before generic label lookup'
+  );
+  assert.match(labelFunction, /if\(el\.name\.indexOf\('prio_'\) === 0\) return feature \+ ' - priority'/);
+  assert.match(js, /form\.querySelectorAll\('input,textarea,select,\[data-checkgroup\]'\)/);
+});
+
+test('quality of life helpers include autosave and jump-to-incomplete controls', () => {
+  const js = readFileSync(new URL('../app.js', import.meta.url), 'utf8');
+
+  assert.match(html, /id="btnNextOpen"/);
+  assert.match(html, /id="saveState"/);
+  assert.match(js, /function saveDraft\(/);
+  assert.match(js, /function restoreDraft\(/);
+  assert.match(js, /function jumpToNextIncomplete\(/);
+});

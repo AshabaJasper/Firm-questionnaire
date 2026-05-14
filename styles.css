@@ -94,6 +94,15 @@
   .btn.primary{background:#8FBFB0;color:#143A30;border-color:#8FBFB0;font-weight:600;}
   .btn.primary:hover{background:#a6cfc2;}
   .btn.danger:hover{border-color:#c46a64;color:#e7b3ae;background:#2f2f28;}
+  .savestate{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#C9C2AC;
+    white-space:nowrap;
+  }
+  .savestate.saved{color:#8FBFB0;}
 
   /* ---------- Layout ---------- */
   .shell{display:grid;grid-template-columns:248px minmax(0,1fr);gap:0;max-width:1320px;margin:0 auto;}

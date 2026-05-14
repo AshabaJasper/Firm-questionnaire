@@ -23,11 +23,13 @@
     <span class="progstatus" id="progStatus">Not started</span>
   </div>
   <button class="btn" id="btnImport">Import JSON</button>
+  <button class="btn" id="btnNextOpen">Next Open</button>
   <button class="btn danger" id="btnClear">Clear</button>
   <button class="btn primary" id="btnPrint">Export PDF</button>
   <button class="btn" id="btnWord">Export Word</button>
   <button class="btn" id="btnExcel">Export Excel</button>
   <button class="btn" id="btnExport">Export JSON</button>
+  <span class="savestate" id="saveState">Draft not saved</span>
   <input type="file" id="fileInput" accept="application/json" style="display:none">
 </div>
 
@@ -93,7 +95,7 @@
 
     <div class="note-banner">
       <span class="ndot"></span>
-      <span>This form holds answers in the browser only &mdash; it does <b>not</b> auto-save. Use <b>Export JSON</b> to save your progress to a file, and <b>Import JSON</b> to resume later. Use <b>Export PDF</b>, <b>Export Word</b>, or <b>Export Excel</b> for the final record.</span>
+      <span>This form saves a private draft in this browser as you type. Use <b>Export JSON</b> for a portable backup, <b>Import JSON</b> to resume from a file, or <b>Export PDF</b>, <b>Export Word</b>, and <b>Export Excel</b> for the final record.</span>
     </div>
 
     <!-- ===== SECTION 1 — LANDSCAPE ===== -->

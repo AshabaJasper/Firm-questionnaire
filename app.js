@@ -170,6 +170,8 @@ document.querySelectorAll('.ftable[data-module]').forEach(box=>{
    PROGRESS, NAV & SCORING
    ============================================================ */
 const form = document.getElementById('doc');
+const STORAGE_KEY = 'audit-discovery-questionnaire-draft-v2';
+let saveTimer = null;
 
 function trackables(){
   // returns {total, done}
@@ -239,7 +241,7 @@ function updateAll(){
   document.getElementById('progText').textContent = done+' / '+total;
   document.getElementById('progPct').textContent = pct+'%';
   document.getElementById('progStatus').textContent =
-    pct === 0 ? 'Not started' :
+    done === 0 ? 'Not started' :
     pct < 50 ? 'In progress' :
     pct < 100 ? 'Nearly there' :
     'Ready to export';
@@ -281,6 +283,16 @@ spyTargets.forEach(t=>{ if(t) spy.observe(t); });
 document.getElementById('navToggle').addEventListener('click', ()=>{
   document.getElementById('sidenav').classList.toggle('open');
 });
+
+function jumpToNextIncomplete(){
+  const target = [...navlinks].find(a=>sectionState(a.getAttribute('data-target')) !== 'done');
+  if(!target) return;
+  const section = document.getElementById(target.getAttribute('data-target'));
+  if(section) section.scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('sidenav').classList.remove('open');
+}
+
+document.getElementById('btnNextOpen').addEventListener('click', jumpToNextIncomplete);
 
 /* ============================================================
    EXPORT / IMPORT / PRINT / CLEAR
@@ -328,6 +340,45 @@ function deserialize(data){
     else { el.value=v; }
   });
   updateAll();
+}
+
+function updateSaveState(message, saved=false){
+  const state = document.getElementById('saveState');
+  if(!state) return;
+  state.textContent = message;
+  state.classList.toggle('saved', saved);
+}
+
+function saveDraft(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      _saved: new Date().toISOString(),
+      responses: serialize()
+    }));
+    updateSaveState('Draft saved', true);
+  }catch(err){
+    updateSaveState('Draft not saved');
+  }
+}
+
+function scheduleSaveDraft(){
+  updateSaveState('Saving...');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveDraft, 350);
+}
+
+function restoreDraft(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const parsed = JSON.parse(raw);
+    deserialize(parsed.responses || parsed);
+    updateSaveState('Draft restored', true);
+    return true;
+  }catch(err){
+    updateSaveState('Draft not restored');
+    return false;
+  }
 }
 
 function escapeHtml(value){
@@ -382,16 +433,20 @@ function labelForField(el){
   if(sign) return textOf(sign.querySelector('.sll'));
   const field = el.closest('.field');
   if(field) return textOf(field.querySelector('.ftiny')) || el.name;
+  const row = el.closest('.frow');
+  if(row){
+    const feature = textOf(row.querySelector('.fn'));
+    if(feature){
+      if(el.name.indexOf('prio_') === 0) return feature + ' - priority';
+      if(el.name.indexOf('note_') === 0) return feature + ' - notes';
+      return feature;
+    }
+  }
   const label = el.closest('label');
   if(label){
     const clone = label.cloneNode(true);
     clone.querySelectorAll('input,textarea,select').forEach(child=>child.remove());
     return textOf(clone) || el.name;
-  }
-  const row = el.closest('.frow');
-  if(row){
-    const feature = textOf(row.querySelector('.fn'));
-    if(feature) return feature + (el.name.indexOf('note_') === 0 ? ' - notes' : '');
   }
   const block = el.closest('.qblock');
   if(block) return textOf(block.querySelector('.qlabel')) || el.name;
@@ -409,35 +464,37 @@ function selectedChoiceLabel(input){
 function collectResponseRows(){
   const rows = [];
   const radioNames = new Set();
+  const checkGroups = new Set();
 
-  form.querySelectorAll('input[type=text],input[type=number],input[type=date],textarea').forEach(el=>{
+  form.querySelectorAll('input,textarea,select,[data-checkgroup]').forEach(el=>{
+    if(el.matches?.('[data-checkgroup]')){
+      if(checkGroups.has(el)) return;
+      checkGroups.add(el);
+      const checked = [...el.querySelectorAll('input[type=checkbox]:checked')].map(selectedChoiceLabel);
+      rows.push({
+        section: sectionTitle(el),
+        question: textOf(el.closest('.qblock')?.querySelector('.qlabel')) || 'Selected options',
+        answer: checked.join(', ')
+      });
+      return;
+    }
     if(!el.name) return;
+    if(el.type === 'checkbox') return;
+    if(el.type === 'radio'){
+      if(radioNames.has(el.name)) return;
+      radioNames.add(el.name);
+      const checked = form.querySelector('input[name="'+CSS.escape(el.name)+'"]:checked');
+      rows.push({
+        section: sectionTitle(el),
+        question: labelForField(el) || el.name,
+        answer: checked ? selectedChoiceLabel(checked) : ''
+      });
+      return;
+    }
     rows.push({
       section: sectionTitle(el),
       question: labelForField(el),
       answer: el.value || ''
-    });
-  });
-
-  form.querySelectorAll('input[type=radio]').forEach(el=>{
-    if(el.name) radioNames.add(el.name);
-  });
-  radioNames.forEach(name=>{
-    const first = form.querySelector('input[name="'+CSS.escape(name)+'"]');
-    const checked = form.querySelector('input[name="'+CSS.escape(name)+'"]:checked');
-    rows.push({
-      section: sectionTitle(first),
-      question: labelForField(first) || name,
-      answer: checked ? selectedChoiceLabel(checked) : ''
-    });
-  });
-
-  document.querySelectorAll('[data-checkgroup]').forEach(group=>{
-    const checked = [...group.querySelectorAll('input[type=checkbox]:checked')].map(selectedChoiceLabel);
-    rows.push({
-      section: sectionTitle(group),
-      question: textOf(group.closest('.qblock')?.querySelector('.qlabel')) || 'Selected options',
-      answer: checked.join(', ')
     });
   });
 
@@ -534,6 +591,7 @@ document.getElementById('fileInput').addEventListener('change', (e)=>{
       const obj = JSON.parse(reader.result);
       const resp = obj.responses || obj;
       deserialize(resp);
+      saveDraft();
       alert('Responses imported successfully.');
     }catch(err){
       alert('Could not read that file — please choose a JSON file exported from this questionnaire.');
@@ -568,10 +626,15 @@ document.getElementById('btnExcel').addEventListener('click', exportExcel);
 document.getElementById('btnClear').addEventListener('click', ()=>{
   if(confirm('Clear every answer in this questionnaire? This cannot be undone — export first if you want to keep your work.')){
     form.reset();
+    localStorage.removeItem(STORAGE_KEY);
+    updateSaveState('Draft cleared');
     updateAll();
     window.scrollTo({top:0,behavior:'smooth'});
   }
 });
 
 /* init */
+restoreDraft();
 updateAll();
+form.addEventListener('input', scheduleSaveDraft);
+form.addEventListener('change', scheduleSaveDraft);
